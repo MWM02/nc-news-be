@@ -5,6 +5,23 @@ const convertTimestampToDate = ({ created_at, ...otherProperties }) => {
   return { created_at: new Date(created_at), ...otherProperties };
 };
 
+const formatArticleData = (rawArticleData) => {
+  return rawArticleData.map((article) => {
+    const articleFormatted = convertTimestampToDate(article);
+    return articleFormatted.votes === undefined
+      ? [
+          articleFormatted.created_at,
+          articleFormatted.title,
+          articleFormatted.topic,
+          articleFormatted.author,
+          articleFormatted.body,
+          0,
+          articleFormatted.article_img_url,
+        ]
+      : Object.values(articleFormatted);
+  });
+};
+
 const lookupAndFormat = (articleData, commentData) => {
   const lookupIDObj = {};
   articleData.forEach((article) => {
@@ -18,4 +35,4 @@ const lookupAndFormat = (articleData, commentData) => {
     return Object.values(copyCommentObj);
   });
 };
-module.exports = { convertTimestampToDate, lookupAndFormat };
+module.exports = { convertTimestampToDate, lookupAndFormat, formatArticleData };

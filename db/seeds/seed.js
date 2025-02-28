@@ -1,6 +1,10 @@
 const db = require("../connection");
 const format = require("pg-format");
-const { convertTimestampToDate, lookupAndFormat } = require("./utils");
+const {
+  convertTimestampToDate,
+  lookupAndFormat,
+  formatArticleData,
+} = require("./utils");
 
 const seed = ({ topicData, userData, articleData, commentData }) => {
   return db
@@ -107,30 +111,16 @@ const insertUsersData = (rawUserData) => {
 };
 
 const insertArticleData = (rawArticleData) => {
-  const articleData = rawArticleData.map((article) => {
-    const articleFormatted = convertTimestampToDate(article);
-    return articleFormatted.votes === undefined
-      ? [
-          articleFormatted.created_at,
-          articleFormatted.title,
-          articleFormatted.topic,
-          articleFormatted.author,
-          articleFormatted.body,
-          0,
-          articleFormatted.article_img_url,
-        ]
-      : Object.values(articleFormatted);
-  });
+  const articleFormatted = formatArticleData(rawArticleData);
   const sqlStr = format(
     "INSERT INTO articles ( created_at, title, topic, author, body, votes, article_img_url) VALUES %L RETURNING *",
-    articleData
+    articleFormatted
   );
   return db.query(sqlStr);
 };
 
 const insertCommentData = (articleData, rawCommentsData) => {
   const commentFormatted = lookupAndFormat(articleData, rawCommentsData);
-  console.log(commentFormatted);
   const sqlStr = format(
     "INSERT INTO comments (created_at, body, votes, author, article_id) VALUES %L",
     commentFormatted
