@@ -1,8 +1,9 @@
 const {
-  convertTimestampToDate
+  convertTimestampToDate,
+  lookupAndFormat,
 } = require("../db/seeds/utils");
 
-describe("convertTimestampToDate", () => {
+describe("Tests for convertTimestampToDate", () => {
   test("returns a new object", () => {
     const timestamp = 1557572706232;
     const input = { created_at: timestamp };
@@ -38,3 +39,217 @@ describe("convertTimestampToDate", () => {
   });
 });
 
+describe("Tests for lookupAndFormat", () => {
+  test("When lookupAndFormat is invoked with articleData (an array of objects containing data from article table) along with an commentData (an array of with a single object) it will return a copy of commentData but article_title will be replaced with article_id instead", () => {
+    const articleData = [
+      {
+        article_id: 1,
+        title: "They're not exactly dogs, are they?",
+      },
+    ];
+    const commentData = [
+      {
+        article_title: "They're not exactly dogs, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        created_at: 1586179020000,
+      },
+    ];
+    const result = lookupAndFormat(articleData, commentData);
+    expect(result).toEqual([
+      [
+        new Date(1586179020000),
+        "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        16,
+        "butter_bridge",
+        1,
+      ],
+    ]);
+  });
+
+  test("When lookupAndFormat is invoked with articleData (an array of objects containing data from article table) along with an commentData (an array of objects) it will return a copy of commentData but article_title will be replaced with article_id instead for all objects in the returning array", () => {
+    const articleData = [
+      {
+        article_id: 1,
+        title: "They're not exactly dogs, are they?",
+      },
+      {
+        article_id: 2,
+        title: "They're not exactly cats, are they?",
+      },
+      {
+        article_id: 32,
+        title: "They're not exactly something, are they?",
+      },
+    ];
+    const commentData = [
+      {
+        article_title: "They're not exactly dogs, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        created_at: 1586179020000,
+      },
+      {
+        article_title: "They're not exactly cats, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        created_at: 1586179020000,
+      },
+      {
+        article_title: "They're not exactly something, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        created_at: 1586179020000,
+      },
+    ];
+    const result = lookupAndFormat(articleData, commentData);
+    expect(result).toEqual([
+      [
+        new Date(1586179020000),
+        "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        16,
+        "butter_bridge",
+        1,
+      ],
+      [
+        new Date(1586179020000),
+        "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        16,
+        "butter_bridge",
+        2,
+      ],
+      [
+        new Date(1586179020000),
+        "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        16,
+        "butter_bridge",
+
+        32,
+      ],
+    ]);
+  });
+  test("The function should not mutate the inputs", () => {
+    const articleData = [
+      {
+        article_id: 1,
+        article_title: "They're not exactly dogs, are they?",
+      },
+      {
+        article_id: 2,
+        article_title: "They're not exactly cats, are they?",
+      },
+      {
+        article_id: 32,
+        article_title: "They're not exactly something, are they?",
+      },
+    ];
+    const commentData = [
+      {
+        article_title: "They're not exactly dogs, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        created_at: 1586179020000,
+      },
+      {
+        article_title: "They're not exactly cats, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        created_at: 1586179020000,
+      },
+      {
+        article_title: "They're not exactly something, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        created_at: 1586179020000,
+      },
+    ];
+    lookupAndFormat(articleData, commentData);
+    expect(articleData).toEqual([
+      {
+        article_id: 1,
+        article_title: "They're not exactly dogs, are they?",
+      },
+      {
+        article_id: 2,
+        article_title: "They're not exactly cats, are they?",
+      },
+      {
+        article_id: 32,
+        article_title: "They're not exactly something, are they?",
+      },
+    ]);
+    expect(commentData).toEqual([
+      {
+        article_title: "They're not exactly dogs, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        created_at: 1586179020000,
+      },
+      {
+        article_title: "They're not exactly cats, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        created_at: 1586179020000,
+      },
+      {
+        article_title: "They're not exactly something, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        created_at: 1586179020000,
+      },
+    ]);
+  });
+
+  test("The output array should have a different reference in memory that is not shared by the two input arrays", () => {
+    const articleData = [
+      {
+        article_id: 1,
+        article_title: "They're not exactly dogs, are they?",
+      },
+      {
+        article_id: 2,
+        article_title: "They're not exactly cats, are they?",
+      },
+      {
+        article_id: 32,
+        article_title: "They're not exactly something, are they?",
+      },
+    ];
+    const commentData = [
+      {
+        article_title: "They're not exactly dogs, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        created_at: 1586179020000,
+      },
+      {
+        article_title: "They're not exactly cats, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        created_at: 1586179020000,
+      },
+      {
+        article_title: "They're not exactly something, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 16,
+        author: "butter_bridge",
+        created_at: 1586179020000,
+      },
+    ];
+    const result = lookupAndFormat(articleData, commentData);
+    expect(result).not.toBe(articleData);
+    expect(result).not.toBe(commentData);
+  });
+});
