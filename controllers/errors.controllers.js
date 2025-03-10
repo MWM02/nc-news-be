@@ -13,7 +13,13 @@ exports.handlePsqlErrors = (err, req, res, next) => {
 };
 
 exports.handleCustomErrors = (err, req, res, next) => {
-  res.status(err.error.status).send({ error: { message: err.error.message } });
+  if (err.error.status && err.error.message) {
+    res
+      .status(err.error.status)
+      .send({ error: { message: err.error.message } });
+  } else {
+    next(err);
+  }
 };
 
 exports.handleServerErrors = (req, res) => {
