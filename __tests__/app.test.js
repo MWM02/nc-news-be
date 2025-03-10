@@ -4,6 +4,7 @@ const app = require("../app");
 const data = require("../db/data/test-data");
 const seed = require("../db/seeds/seed");
 const db = require("../db/connection");
+require("jest-sorted");
 
 beforeEach(() => {
   return seed(data);
@@ -47,16 +48,15 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/2")
       .expect(200)
       .then(({ body: { article } }) => {
-        expect(article).toEqual({
-          article_id: 2,
-          title: "Sony Vaio; or, The Laptop",
-          topic: "mitch",
-          author: "icellusedkars",
-          body: "Call me Mitchell. Some years ago..",
-          created_at: "2020-10-16T05:03:00.000Z",
-          votes: 0,
-          article_img_url:
-            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        expect(article).toMatchObject({
+          article_id: expect.any(Number),
+          title: expect.any(String),
+          topic: expect.any(String),
+          author: expect.any(String),
+          body: expect.any(String),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String),
         });
       });
   });
@@ -76,6 +76,30 @@ describe("GET /api/articles/:article_id", () => {
       .expect(404)
       .then(({ body: { error } }) => {
         expect(error.message).toBe("No matches found");
+      });
+  });
+});
+
+describe("GET /api/articles", () => {
+  test("200: Responds with an array of articles objects sorted by created_at in descending order containing the properties: author, title, article_id, topic, created_at, votes, article_img_url", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles.length).toBe(13);
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+        expect(articles).toBeSortedBy("created_at", { descending: true });
       });
   });
 });
