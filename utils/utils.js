@@ -44,11 +44,19 @@ const checkIfExist = async (table_name, column_name, value) => {
     column_name
   );
   const results = await db.query(sqlQuery, [value]);
-  if (results.rows.length === 0) {
-    return Promise.reject({
-      error: { message: "Resource not found", status: 404 },
-    });
-  }
+  return results.rows.length
+    ? true
+    : Promise.reject({
+        error: { message: "Resource not found", status: 404 },
+      });
+};
+
+const verifyBodyForCommentsPost = (username, body) => {
+  return username && body
+    ? true
+    : Promise.reject({
+        error: { message: "Invalid request body", status: 400 },
+      });
 };
 
 module.exports = {
@@ -56,4 +64,5 @@ module.exports = {
   lookupAndFormat,
   formatArticleData,
   checkIfExist,
+  verifyBodyForCommentsPost,
 };

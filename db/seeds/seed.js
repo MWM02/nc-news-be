@@ -82,7 +82,7 @@ const createComments = async () => {
     article_id INT REFERENCES articles(article_id),
     body TEXT NOT NULL,
     votes INT DEFAULT 0,
-    author VARCHAR(255) REFERENCES users(username),
+    author VARCHAR(255) REFERENCES users(username) NOT NULL,
     created_at TIMESTAMP
     );
     `);
