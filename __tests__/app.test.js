@@ -153,6 +153,73 @@ describe("GET /api/articles/:articles/comments", () => {
   });
 });
 
+describe("POST /api/articles/:article_id/comments", () => {
+  test("201: Responds with an object containing the inserted comment", () => {
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send({ username: "lurker", body: "This is a test" })
+      .expect(201)
+      .then(({ body: { postedComment } }) => {
+        expect(postedComment.author).toBe("lurker");
+        expect(postedComment.body).toBe("This is a test");
+        expect(postedComment.article_id).toBe(2);
+        expect(postedComment.votes).toBe(0);
+        expect(postedComment.comment_id).toBe(19);
+        expect(typeof postedComment.created_at).toBe("string");
+      });
+  });
+
+  test("404: Responds with an error object containing an error message when article_id is of valid data type but does not exist", () => {
+    return request(app)
+      .post("/api/articles/99/comments")
+      .send({ username: "lurker", body: "This is a test" })
+      .expect(404)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Resource not found");
+      });
+  });
+
+  test("400: Responds with an error object containing an error message when the article_id is of invalid data type", () => {
+    return request(app)
+      .post("/api/articles/two/comments")
+      .send({ username: "lurker", body: "This is a test" })
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid text representation");
+      });
+  });
+
+  test("400: Responds with an error object containing an error message when the request body is lacks necessary properties (username or body)", () => {
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send({ body: "This is a test" })
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid request body");
+      });
+  });
+
+  test("400: Responds with an error object containing an error message when the request body's username property contains a username that does not exist in users table", () => {
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send({ username: "fake_user", body: "234" })
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("foreign key violation");
+      });
+  });
+
+  test("400: Responds with an error object containing an error message when the request body's body property contains an empty string", () => {
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send({ username: "lurker", body: "" })
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid request body");
+      });
+  });
+});
+
 describe("Other errors", () => {
   test("404: Responds with an object containing an error message and error code when the requested endpoint doesn't match to any api endpoint", () => {
     return request(app)
