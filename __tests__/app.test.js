@@ -119,6 +119,9 @@ describe("GET /api/articles/:articles/comments", () => {
           expect(typeof comment.body).toBe("string");
           expect(comment.article_id).toBe(1);
         });
+        expect(commentsByArticleId).toBeSortedBy("created_at", {
+          descending: true,
+        });
       });
   });
 
