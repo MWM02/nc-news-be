@@ -7,6 +7,14 @@ exports.handlePsqlErrors = (err, req, res, next) => {
     res.status(400).send({
       error: { message: "Invalid text representation" },
     });
+  } else if (err.code === "23502") {
+    res.status(400).send({
+      error: { message: "Not null violation" },
+    });
+  } else if (err.code === "23503") {
+    res.status(400).send({
+      error: { message: "foreign key violation" },
+    });
   } else {
     next(err);
   }
