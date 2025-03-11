@@ -7,7 +7,7 @@ exports.fetchArticleById = async (article_id) => {
   );
   if (rows.length === 0) {
     return Promise.reject({
-      error: { message: "No matches found", status: 404 },
+      error: { message: "Resource not found", status: 404 },
     });
   }
   return rows[0];
