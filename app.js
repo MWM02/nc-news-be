@@ -7,6 +7,9 @@ const {
   getArticles,
 } = require("./controllers/articles.controllers");
 const {
+  getCommentsByArticleId,
+} = require("./controllers/comments.controllers");
+const {
   endpointErrorHandler,
   handlePsqlErrors,
   handleCustomErrors,
@@ -20,6 +23,8 @@ app.get("/api/topics", getTopics);
 app.get("/api/articles/:article_id", getArticleById);
 
 app.get("/api/articles", getArticles);
+
+app.get("/api/articles/:article_id/comments", getCommentsByArticleId);
 
 app.all("*", endpointErrorHandler);
 
