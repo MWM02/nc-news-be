@@ -1,10 +1,6 @@
 const db = require("../connection");
 const format = require("pg-format");
-const {
-  convertTimestampToDate,
-  lookupAndFormat,
-  formatArticleData,
-} = require("./utils");
+const { lookupAndFormat, formatArticleData } = require("../../utils/utils");
 
 const seed = ({ topicData, userData, articleData, commentData }) => {
   return db
@@ -92,39 +88,39 @@ const createComments = async () => {
     `);
 };
 
-const insertTopicsData = (rawTopicData) => {
+const insertTopicsData = async (rawTopicData) => {
   const topicData = rawTopicData.map((topic) => Object.values(topic));
   const sqlStr = format(
     "INSERT INTO topics (description, slug, img_url) VALUES %L",
     topicData
   );
-  return db.query(sqlStr);
+  return await db.query(sqlStr);
 };
 
-const insertUsersData = (rawUserData) => {
+const insertUsersData = async (rawUserData) => {
   const userData = rawUserData.map((user) => Object.values(user));
   const sqlStr = format(
     "INSERT INTO users (username, name, avatar_url) VALUES %L",
     userData
   );
-  return db.query(sqlStr);
+  return await db.query(sqlStr);
 };
 
-const insertArticleData = (rawArticleData) => {
+const insertArticleData = async (rawArticleData) => {
   const articleFormatted = formatArticleData(rawArticleData);
   const sqlStr = format(
     "INSERT INTO articles ( created_at, title, topic, author, body, votes, article_img_url) VALUES %L RETURNING *",
     articleFormatted
   );
-  return db.query(sqlStr);
+  return await db.query(sqlStr);
 };
 
-const insertCommentData = (articleData, rawCommentsData) => {
+const insertCommentData = async (articleData, rawCommentsData) => {
   const commentFormatted = lookupAndFormat(articleData, rawCommentsData);
   const sqlStr = format(
     "INSERT INTO comments (created_at, body, votes, author, article_id) VALUES %L",
     commentFormatted
   );
-  return db.query(sqlStr);
+  return await db.query(sqlStr);
 };
 module.exports = seed;
