@@ -2,7 +2,19 @@ const {
   convertTimestampToDate,
   lookupAndFormat,
   formatArticleData,
-} = require("../db/seeds/utils");
+  checkIfExist,
+} = require("../utils/utils");
+const db = require("../db/connection");
+const data = require("../db/data/test-data");
+const seed = require("../db/seeds/seed");
+
+beforeEach(() => {
+  return seed(data);
+});
+
+afterAll(() => {
+  return db.end();
+});
 
 describe("Tests for convertTimestampToDate", () => {
   test("returns a new object", () => {
@@ -440,5 +452,28 @@ describe("Tests for lookupAndFormat", () => {
     const result = lookupAndFormat(articleData, commentData);
     expect(result).not.toBe(articleData);
     expect(result).not.toBe(commentData);
+  });
+});
+
+describe("Tests for checkIfExists", () => {
+  test("When the checkIfExists is invoked with a table name, column name, value  it should return undefined if a row exists for that value in the table", async () => {
+    const table = "articles";
+    const col = "article_id";
+    const val = "1";
+    const result = await checkIfExist(table, col, val);
+    expect(result).toBe(undefined);
+  });
+
+  test("When the checkIfExists is invoked with a table name, column name, value  it should return an error object with a message and status if a row doesn't exists for that value in the table", async () => {
+    const table = "articles";
+    const col = "article_id";
+    const val = "100";
+    try {
+      const result = await checkIfExist(table, col, val);
+    } catch (err) {
+      expect(err).toEqual({
+        error: { message: "Resource not found", status: 404 },
+      });
+    }
   });
 });

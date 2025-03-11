@@ -38,5 +38,28 @@
         }
       ]
     }
+  },
+  "GET /api/articles/:articles/comments": {
+    "description": "serves an array of comments for the given article_id with most recent comments first",
+    "exampleResponse": {
+      "commentsByArticleId": [
+        {
+          "comment_id": 2,
+          "votes": 10,
+          "created_at": "2018-05-30T15:59:13.341Z",
+          "author": "icellusedkars",
+          "body": "Text from the article..",
+          "article_id": 1
+        },
+        {
+          "comment_id": 6,
+          "votes": 11,
+          "created_at": "2018-06-30T15:59:13.341Z",
+          "author": "icellusedkars2",
+          "body": "Text from the article..",
+          "article_id": 1
+        }
+      ]
+    }
   }
 }

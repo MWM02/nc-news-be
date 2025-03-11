@@ -1,4 +1,5 @@
-const db = require("../../db/connection");
+const format = require("pg-format");
+const db = require("../db/connection");
 
 const convertTimestampToDate = ({ created_at, ...otherProperties }) => {
   if (!created_at) return { ...otherProperties };
@@ -35,4 +36,24 @@ const lookupAndFormat = (articleData, commentData) => {
     return Object.values(copyCommentObj);
   });
 };
-module.exports = { convertTimestampToDate, lookupAndFormat, formatArticleData };
+
+const checkIfExist = async (table_name, column_name, value) => {
+  const sqlQuery = format(
+    "SELECT * FROM %I WHERE %I = $1",
+    table_name,
+    column_name
+  );
+  const results = await db.query(sqlQuery, [value]);
+  if (results.rows.length === 0) {
+    return Promise.reject({
+      error: { message: "Resource not found", status: 404 },
+    });
+  }
+};
+
+module.exports = {
+  convertTimestampToDate,
+  lookupAndFormat,
+  formatArticleData,
+  checkIfExist,
+};
