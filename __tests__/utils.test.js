@@ -3,6 +3,7 @@ const {
   lookupAndFormat,
   formatArticleData,
   checkIfExist,
+  verifyBodyForCommentsPost,
 } = require("../utils/utils");
 const db = require("../db/connection");
 const data = require("../db/data/test-data");
@@ -456,24 +457,46 @@ describe("Tests for lookupAndFormat", () => {
 });
 
 describe("Tests for checkIfExists", () => {
-  test("When the checkIfExists is invoked with a table name, column name, value  it should return undefined if a row exists for that value in the table", async () => {
+  test("When checkIfExists is invoked with a table name, column name, value  it should return true if a row exists for that value in the table", async () => {
     const table = "articles";
     const col = "article_id";
     const val = "1";
     const result = await checkIfExist(table, col, val);
-    expect(result).toBe(undefined);
+    expect(result).toBe(true);
   });
 
-  test("When the checkIfExists is invoked with a table name, column name, value  it should return an error object with a message and status if a row doesn't exists for that value in the table", async () => {
+  test("When checkIfExists is invoked with a table name, column name, value  it should return an error object with a message and status if a row doesn't exists for that value in the table", async () => {
     const table = "articles";
     const col = "article_id";
     const val = "100";
     try {
-      const result = await checkIfExist(table, col, val);
+      await checkIfExist(table, col, val);
     } catch (err) {
       expect(err).toEqual({
         error: { message: "Resource not found", status: 404 },
       });
     }
+  });
+});
+
+describe("Tests for verifyBodyForCommentsPost", () => {
+  test("When verifyBodyForCommentsPost is invoked, if any of its arguments are falsey it will reject the promise with an error message and code", async () => {
+    const user = "test";
+    const body = undefined;
+    try {
+      await verifyBodyForCommentsPost(user, body);
+    } catch (err) {
+      expect(err.error).toEqual({
+        message: "Invalid request body",
+        status: 400,
+      });
+    }
+  });
+
+  test("When verifyBodyForCommentsPost is invoked, when all of its arguments are truthy it will return true", async () => {
+    const user = "test";
+    const body = "askdhs";
+    const result = await verifyBodyForCommentsPost(user, body);
+    expect(result).toBe(true);
   });
 });
