@@ -61,7 +61,7 @@ describe("GET /api/articles/:article_id", () => {
       });
   });
 
-  test("400: Responds with an object containing an error message and error code when the requested article_id is of an invalid data type", () => {
+  test("400: Responds with an object containing an error message when the requested article_id is of an invalid data type", () => {
     return request(app)
       .get("/api/articles/two")
       .expect(400)
@@ -70,12 +70,12 @@ describe("GET /api/articles/:article_id", () => {
       });
   });
 
-  test("404: Responds with an object containing an error message and error code when the requested article_id of valid data type does not exist", () => {
+  test("404: Responds with an object containing an error message when the requested article_id of valid data type does not exist", () => {
     return request(app)
       .get("/api/articles/99999")
       .expect(404)
       .then(({ body: { error } }) => {
-        expect(error.message).toBe("No matches found");
+        expect(error.message).toBe("Resource not found");
       });
   });
 });
@@ -100,6 +100,52 @@ describe("GET /api/articles", () => {
           });
         });
         expect(articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+});
+
+describe("GET /api/articles/:articles/comments", () => {
+  test("200: Responds with an array of comment objects for a given article_id", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then(({ body: { commentsByArticleId } }) => {
+        expect(commentsByArticleId.length).toBe(11);
+        commentsByArticleId.forEach((comment) => {
+          expect(typeof comment.comment_id).toBe("number");
+          expect(typeof comment.votes).toBe("number");
+          expect(typeof comment.created_at).toBe("string");
+          expect(typeof comment.author).toBe("string");
+          expect(typeof comment.body).toBe("string");
+          expect(comment.article_id).toBe(1);
+        });
+      });
+  });
+
+  test("200 Responds with an empty array for an article_id that exists in the articles table but does not have any comments", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .expect(200)
+      .then(({ body: { commentsByArticleId } }) => {
+        expect(commentsByArticleId.length).toBe(0);
+      });
+  });
+
+  test("400: Responds with an object containing an error message when the requested article_id is of an invalid data type", () => {
+    return request(app)
+      .get("/api/articles/two/comments")
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid text representation");
+      });
+  });
+
+  test("404: Responds with an error object containing an error message when the request article_id is of valid data type but does not exist", () => {
+    return request(app)
+      .get("/api/articles/99/comments")
+      .expect(404)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Resource not found");
       });
   });
 });
