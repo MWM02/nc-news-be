@@ -13,7 +13,7 @@ exports.handlePsqlErrors = (err, req, res, next) => {
     });
   } else if (err.code === "23503") {
     res.status(400).send({
-      error: { message: "foreign key violation" },
+      error: { message: "Foreign key violation" },
     });
   } else {
     next(err);
