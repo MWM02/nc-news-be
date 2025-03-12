@@ -3,18 +3,14 @@ exports.endpointErrorHandler = (req, res) => {
 };
 
 exports.handlePsqlErrors = (err, req, res, next) => {
-  if (err.code === "22P02") {
-    res.status(400).send({
-      error: { message: "Invalid text representation" },
-    });
-  } else if (err.code === "23502") {
-    res.status(400).send({
-      error: { message: "Not null violation" },
-    });
-  } else if (err.code === "23503") {
-    res.status(400).send({
-      error: { message: "Foreign key violation" },
-    });
+  const errCodeToMessage = {
+    "22P02": "Invalid text representation",
+    23502: "Not null violation",
+    23503: "Foreign key violation",
+    42703: "Undefined column",
+  };
+  if (errCodeToMessage[err.code]) {
+    res.status(400).send({ error: { message: errCodeToMessage[err.code] } });
   } else {
     next(err);
   }
