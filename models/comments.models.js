@@ -12,9 +12,13 @@ exports.fetchCommentsByArticleId = async (article_id) => {
 
 exports.insertCommentByArticleId = async (commentToPost) => {
   const sqlStr = format(
-    "INSERT INTO comments ( created_at, article_id, author, body) VALUES %L RETURNING *",
+    `INSERT INTO comments ( created_at, article_id, author, body) VALUES %L RETURNING *`,
     [Object.values(convertTimestampToDate(commentToPost))]
   );
   const { rows } = await db.query(sqlStr);
   return rows[0];
+};
+
+exports.removeCommentById = async (comment_id) => {
+  await db.query(`DELETE FROM comments WHERE comment_id = $1`, [comment_id]);
 };

@@ -1,6 +1,7 @@
 const {
   fetchCommentsByArticleId,
   insertCommentByArticleId,
+  removeCommentById,
 } = require("../models/comments.models");
 const { checkIfExist, verifyReqBody } = require("../utils/utils");
 
@@ -35,6 +36,20 @@ exports.postCommentByArticleId = async (req, res, next) => {
   try {
     const results = await Promise.all(promises);
     return res.status(201).send({ postedComment: results[2] });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteCommentById = async (req, res, next) => {
+  const { comment_id } = req.params;
+  const promises = [
+    checkIfExist("comments", "comment_id", comment_id),
+    removeCommentById(comment_id),
+  ];
+  try {
+    await Promise.all(promises);
+    res.status(204).send({});
   } catch (err) {
     next(err);
   }
