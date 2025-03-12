@@ -1,3 +1,4 @@
+const format = require("pg-format");
 const db = require("../db/connection");
 const { checkIfExist, verifyReqBody } = require("../utils/utils");
 
@@ -12,10 +13,20 @@ exports.fetchArticleById = async (req) => {
   return results[1].rows[0];
 };
 
-exports.fetchArticles = async () => {
-  const { rows } = await db.query(
-    `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(articles.article_id) ::INT as comment_count  FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY created_at DESC`
+exports.fetchArticles = async (req) => {
+  const { sort_by = "created_at", order = "DESC" } = req.query;
+  let sqlStr = format(
+    `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(articles.article_id) ::INT as comment_count  FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY %I `,
+    sort_by
   );
+  if (order.toUpperCase() === "DESC" || order.toUpperCase() === "ASC") {
+    sqlStr += order;
+  } else {
+    return Promise.reject({
+      error: { message: "Invalid order in request query", status: 400 },
+    });
+  }
+  const { rows } = await db.query(sqlStr);
   return rows;
 };
 
