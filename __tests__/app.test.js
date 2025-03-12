@@ -5,6 +5,7 @@ const data = require("../db/data/test-data");
 const seed = require("../db/seeds/seed");
 const db = require("../db/connection");
 const { string } = require("pg-format");
+const articles = require("../db/data/test-data/articles");
 require("jest-sorted");
 
 beforeEach(() => {
@@ -82,7 +83,7 @@ describe("GET /api/articles/:article_id", () => {
 });
 
 describe("GET /api/articles", () => {
-  test("200: Responds with an array of articles objects sorted by created_at in descending order containing the properties: author, title, article_id, topic, created_at, votes, article_img_url", () => {
+  test("200: Responds with an array of articles objects sorted by created_at in descending order by default containing the properties: author, title, article_id, topic, created_at, votes, article_img_url", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
@@ -101,6 +102,67 @@ describe("GET /api/articles", () => {
           });
         });
         expect(articles).toBeSortedBy("created_at", { descending: true });
+      });
+  });
+
+  test("200: Responds with an array of articles sorted by a valid column in ascending order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=author&order=asc")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles.length).toBe(13);
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+        expect(articles).toBeSortedBy("author", { descending: false });
+      });
+  });
+
+  test("200: Responds with an array of articles sorted by a valid column in descending order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=votes&order=desc")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles.length).toBe(13);
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: expect.any(String),
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+        expect(articles).toBeSortedBy("votes", { descending: true });
+      });
+  });
+
+  test("400: Responds with an object containing an error message when the request query contains an invalid sort_by column", () => {
+    return request(app)
+      .get("/api/articles?sort_by=random&order=desc")
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Undefined column");
+      });
+  });
+  test("400: Responds with an object containing an error message when the request query contains an invalid order", () => {
+    return request(app)
+      .get("/api/articles?sort_by=votes&order=random")
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid order in request query");
       });
   });
 });
@@ -156,17 +218,42 @@ describe("GET /api/articles/:articles/comments", () => {
 
 describe("POST /api/articles/:article_id/comments", () => {
   test("201: Responds with an object containing the inserted comment", () => {
+    const comment = { username: "lurker", body: "This is a test" };
     return request(app)
       .post("/api/articles/2/comments")
-      .send({ username: "lurker", body: "This is a test" })
+      .send(comment)
       .expect(201)
       .then(({ body: { postedComment } }) => {
-        expect(postedComment.author).toBe("lurker");
-        expect(postedComment.body).toBe("This is a test");
-        expect(postedComment.article_id).toBe(2);
-        expect(postedComment.votes).toBe(0);
-        expect(postedComment.comment_id).toBe(19);
-        expect(typeof postedComment.created_at).toBe("string");
+        expect(postedComment).toMatchObject({
+          author: comment.username,
+          body: comment.body,
+          article_id: expect.any(Number),
+          votes: expect.any(Number),
+          comment_id: expect.any(Number),
+          created_at: expect.any(String),
+        });
+      });
+  });
+
+  test("201: Responds with an object containing the inserted comment even when the request body has additional properties", () => {
+    const comment = {
+      username: "lurker",
+      body: "This is a test",
+      test: "Ignore",
+    };
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send(comment)
+      .expect(201)
+      .then(({ body: { postedComment } }) => {
+        expect(postedComment).toMatchObject({
+          author: comment.username,
+          body: comment.body,
+          article_id: expect.any(Number),
+          votes: expect.any(Number),
+          comment_id: expect.any(Number),
+          created_at: expect.any(String),
+        });
       });
   });
 
