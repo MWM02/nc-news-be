@@ -3,7 +3,7 @@ const {
   lookupAndFormat,
   formatArticleData,
   checkIfExist,
-  verifyBodyForCommentsPost,
+  verifyReqBody,
 } = require("../utils/utils");
 const db = require("../db/connection");
 const data = require("../db/data/test-data");
@@ -479,24 +479,22 @@ describe("Tests for checkIfExists", () => {
   });
 });
 
-describe("Tests for verifyBodyForCommentsPost", () => {
-  test("When verifyBodyForCommentsPost is invoked, if any of its arguments are falsey it will reject the promise with an error message and code", async () => {
-    const user = "test";
-    const body = undefined;
-    try {
-      await verifyBodyForCommentsPost(user, body);
-    } catch (err) {
-      expect(err.error).toEqual({
-        message: "Invalid request body",
-        status: 400,
-      });
-    }
+describe("Tests for verifyRequestBody", () => {
+  test("When the function is invoked with a request body and an array of destructuring keys, it will return true if all of its keys and values are truthy", () => {
+    const requestBody = { username: "test", body: "Hello" };
+    const destructKeys = ["username", "body"];
+    const result = verifyReqBody(requestBody, destructKeys);
+    expect(result).toBe(true);
   });
 
-  test("When verifyBodyForCommentsPost is invoked, when all of its arguments are truthy it will return true", async () => {
-    const user = "test";
-    const body = "askdhs";
-    const result = await verifyBodyForCommentsPost(user, body);
-    expect(result).toBe(true);
+  test("When the function is invoked with a request body and an array of destructuring keys, it will return an error object if any of the keys within the array do not exist with the request body", async () => {
+    const requestBody = { username: "asd" };
+    const destructKeys = ["username", "body"];
+    try {
+      const result = await verifyReqBody(requestBody, destructKeys);
+    } catch (err) {
+      expect(err.error.message).toBe("Invalid request body");
+      expect(err.error.status).toBe(400);
+    }
   });
 });
