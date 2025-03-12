@@ -23,7 +23,7 @@
     }
   },
   "GET /api/articles": {
-    "description": "serves an array of all articles sorted by date in descending order",
+    "description": "serves an array of all articles sorted by date in descending order by default, additional queries can be appended to the request to sort_by any valid column, order to sort by ascending or descending, topic to filter by",
     "queries": ["author", "topic", "sort_by", "order"],
     "exampleResponse": {
       "articles": [
