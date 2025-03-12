@@ -74,7 +74,7 @@
     }
   },
   "PATCH /api/articles/:article_id": {
-    "description": "serves an object containing the article that matches the article_id with it votes property adjusted",
+    "description": "serves an object containing the updated article that matches the article_id with it votes property adjusted",
     "exampleResponse": {
       "article_id": 2,
       "title": "Sony Vaio; or, The Laptop",
@@ -85,5 +85,9 @@
       "votes": 2,
       "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
     }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "serves no response body but will delete comment by comment_id from comments table",
+    "exampleResponse": {}
   }
 }
