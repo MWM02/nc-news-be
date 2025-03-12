@@ -47,7 +47,7 @@ describe("GET /api/topics", () => {
 describe("GET /api/articles/:article_id", () => {
   test("200: Responds with an article object that will contain the properties: author, title, article_id, body, topic, created_at, votes, article_img_url", () => {
     return request(app)
-      .get("/api/articles/2")
+      .get("/api/articles/1")
       .expect(200)
       .then(({ body: { article } }) => {
         expect(article).toMatchObject({
@@ -59,6 +59,7 @@ describe("GET /api/articles/:article_id", () => {
           created_at: expect.any(String),
           votes: expect.any(Number),
           article_img_url: expect.any(String),
+          comment_count: 11,
         });
       });
   });
