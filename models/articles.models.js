@@ -4,7 +4,7 @@ const { checkIfExist, verifyReqBody } = require("../utils/utils");
 
 exports.fetchArticleById = async (req) => {
   const { article_id } = req.params;
-  const sqlStr = `SELECT * FROM articles WHERE article_id = $1`;
+  const sqlStr = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.body, articles.created_at, articles.votes, articles.article_img_url, COUNT(articles.article_id) ::INT as comment_count  FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id WHERE articles.article_id = $1 GROUP BY articles.article_id`;
   const promises = [
     checkIfExist("articles", "article_id", article_id),
     db.query(sqlStr, [article_id]),
