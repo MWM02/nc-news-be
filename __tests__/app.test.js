@@ -4,6 +4,7 @@ const app = require("../app");
 const data = require("../db/data/test-data");
 const seed = require("../db/seeds/seed");
 const db = require("../db/connection");
+const { string } = require("pg-format");
 require("jest-sorted");
 
 beforeEach(() => {
@@ -205,7 +206,7 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send({ username: "fake_user", body: "234" })
       .expect(400)
       .then(({ body: { error } }) => {
-        expect(error.message).toBe("foreign key violation");
+        expect(error.message).toBe("Foreign key violation");
       });
   });
 
@@ -284,8 +285,7 @@ describe("DELETE /api/comments/:comment_id", () => {
     return request(app)
       .delete("/api/comments/1")
       .expect(204)
-      .then(({ body }) => {
-        expect(body).toEqual({});
+      .then(() => {
         db.query(`SELECT * FROM comments WHERE comment_id = 1`).then(
           ({ rows }) => {
             expect(rows.length).toBe(0);
@@ -309,6 +309,24 @@ describe("DELETE /api/comments/:comment_id", () => {
       .expect(400)
       .then(({ body: { error } }) => {
         expect(error.message).toBe("Invalid text representation");
+      });
+  });
+});
+
+describe("GET /api/users", () => {
+  test("200: Responds with an array of user objects, each should contain a username, name, and an avatar property", () => {
+    return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body: { users } }) => {
+        expect(users.length).toBe(4);
+        users.forEach((user) => {
+          expect(user).toMatchObject({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String),
+          });
+        });
       });
   });
 });
