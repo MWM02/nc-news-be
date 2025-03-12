@@ -149,6 +149,44 @@ describe("GET /api/articles", () => {
       });
   });
 
+  test("200: Responds with an array of article filtered by a valid topic", () => {
+    return request(app)
+      .get("/api/articles?topic=mitch")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        articles.forEach((article) => {
+          expect(article).toMatchObject({
+            author: expect.any(String),
+            title: expect.any(String),
+            article_id: expect.any(Number),
+            topic: "mitch",
+            created_at: expect.any(String),
+            votes: expect.any(Number),
+            article_img_url: expect.any(String),
+            comment_count: expect.any(Number),
+          });
+        });
+      });
+  });
+
+  test("200: Responds with an empty array when the request query contains a valid topic which does not have any articles", () => {
+    return request(app)
+      .get("/api/articles?topic=paper")
+      .expect(200)
+      .then(({ body: { articles } }) => {
+        expect(articles.length).toBe(0);
+      });
+  });
+
+  test("404: Responds with an object containing an error message when the request query contains a topic that does not exist", () => {
+    return request(app)
+      .get("/api/articles?topic=greenhouses")
+      .expect(404)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Resource not found");
+      });
+  });
+
   test("400: Responds with an object containing an error message when the request query contains an invalid sort_by column", () => {
     return request(app)
       .get("/api/articles?sort_by=random&order=desc")
@@ -157,6 +195,7 @@ describe("GET /api/articles", () => {
         expect(error.message).toBe("Undefined column");
       });
   });
+
   test("400: Responds with an object containing an error message when the request query contains an invalid order", () => {
     return request(app)
       .get("/api/articles?sort_by=votes&order=random")
