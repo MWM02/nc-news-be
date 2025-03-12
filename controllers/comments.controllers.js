@@ -1,9 +1,8 @@
-const { use } = require("../app");
 const {
   fetchCommentsByArticleId,
   insertCommentByArticleId,
 } = require("../models/comments.models");
-const { checkIfExist, verifyBodyForCommentsPost } = require("../utils/utils");
+const { checkIfExist, verifyReqBody } = require("../utils/utils");
 
 exports.getCommentsByArticleId = async (req, res, next) => {
   const { article_id } = req.params;
@@ -30,7 +29,7 @@ exports.postCommentByArticleId = async (req, res, next) => {
   };
   const promises = [
     checkIfExist("articles", "article_id", article_id),
-    verifyBodyForCommentsPost(username, body),
+    verifyReqBody(req.body, ["username", "body"]),
     insertCommentByArticleId(commentData),
   ];
   try {

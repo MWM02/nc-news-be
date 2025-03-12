@@ -51,12 +51,15 @@ const checkIfExist = async (table_name, column_name, value) => {
       });
 };
 
-const verifyBodyForCommentsPost = (username, body) => {
-  return username && body
-    ? true
-    : Promise.reject({
+const verifyReqBody = (requestBody, destructKeys) => {
+  for (const key of destructKeys) {
+    if (!requestBody[key]) {
+      return Promise.reject({
         error: { message: "Invalid request body", status: 400 },
       });
+    }
+  }
+  return true;
 };
 
 module.exports = {
@@ -64,5 +67,5 @@ module.exports = {
   lookupAndFormat,
   formatArticleData,
   checkIfExist,
-  verifyBodyForCommentsPost,
+  verifyReqBody,
 };
