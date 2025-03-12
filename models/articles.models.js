@@ -1,16 +1,15 @@
 const db = require("../db/connection");
+const { checkIfExist, verifyReqBody } = require("../utils/utils");
 
-exports.fetchArticleById = async (article_id) => {
-  const { rows } = await db.query(
-    `SELECT * FROM articles WHERE article_id = $1`,
-    [article_id]
-  );
-  if (rows.length === 0) {
-    return Promise.reject({
-      error: { message: "Resource not found", status: 404 },
-    });
-  }
-  return rows[0];
+exports.fetchArticleById = async (req) => {
+  const { article_id } = req.params;
+  const sqlStr = `SELECT * FROM articles WHERE article_id = $1`;
+  const promises = [
+    checkIfExist("articles", "article_id", article_id),
+    db.query(sqlStr, [article_id]),
+  ];
+  const results = await Promise.all(promises);
+  return results[1].rows[0];
 };
 
 exports.fetchArticles = async () => {
@@ -20,10 +19,15 @@ exports.fetchArticles = async () => {
   return rows;
 };
 
-exports.updateArticleById = async (article_id, inc_votes) => {
-  const { rows } = await db.query(
-    `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *`,
-    [inc_votes, article_id]
-  );
-  return rows[0];
+exports.updateArticleById = async (req) => {
+  const { article_id } = req.params;
+  const { inc_votes } = req.body;
+  const sqlStr = `UPDATE articles SET votes = votes + $1 WHERE article_id = $2 RETURNING *`;
+  const promises = [
+    checkIfExist("articles", "article_id", article_id),
+    verifyReqBody(req.body, ["inc_votes"]),
+    db.query(sqlStr, [inc_votes, article_id]),
+  ];
+  const results = await Promise.all(promises);
+  return results[2].rows[0];
 };
