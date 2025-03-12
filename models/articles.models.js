@@ -14,11 +14,20 @@ exports.fetchArticleById = async (req) => {
 };
 
 exports.fetchArticles = async (req) => {
-  const { sort_by = "created_at", order = "DESC" } = req.query;
-  let sqlStr = format(
-    `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(articles.article_id) ::INT as comment_count  FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id GROUP BY articles.article_id ORDER BY %I `,
-    sort_by
-  );
+  const { sort_by = "created_at", order = "DESC", topic } = req.query;
+  const values = [];
+  const promises = [];
+  let sqlPromiseIndex = 0;
+  let sqlStr = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(articles.article_id) ::INT as comment_count  FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id `;
+  if (topic) {
+    sqlStr += `WHERE topic = $1`;
+    values.push(topic);
+    promises.push(checkIfExist("topics", "slug", topic));
+    sqlPromiseIndex++;
+  }
+
+  sqlStr += format(` GROUP BY articles.article_id ORDER BY %I `, sort_by);
+
   if (order.toUpperCase() === "DESC" || order.toUpperCase() === "ASC") {
     sqlStr += order;
   } else {
@@ -26,7 +35,9 @@ exports.fetchArticles = async (req) => {
       error: { message: "Invalid order in request query", status: 400 },
     });
   }
-  const { rows } = await db.query(sqlStr);
+  promises.push(db.query(sqlStr, values));
+  const results = await Promise.all(promises);
+  const { rows } = results[sqlPromiseIndex];
   return rows;
 };
 
