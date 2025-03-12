@@ -279,6 +279,40 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 });
 
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: Responds with no content and the row relating to the comment_id should be removed from the comments table", () => {
+    return request(app)
+      .delete("/api/comments/1")
+      .expect(204)
+      .then(({ body }) => {
+        expect(body).toEqual({});
+        db.query(`SELECT * FROM comments WHERE comment_id = 1`).then(
+          ({ rows }) => {
+            expect(rows.length).toBe(0);
+          }
+        );
+      });
+  });
+
+  test("404: Responds with an error object containing an error message when comment_id is of valid data type but does not exist", () => {
+    return request(app)
+      .delete("/api/comments/50")
+      .expect(404)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Resource not found");
+      });
+  });
+
+  test("400: Responds with an error object containing an error message when the comment_id is of invalid data type", () => {
+    return request(app)
+      .delete("/api/comments/L")
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid text representation");
+      });
+  });
+});
+
 describe("Other errors", () => {
   test("404: Responds with an object containing an error message and error code when the requested endpoint doesn't match to any api endpoint", () => {
     return request(app)
