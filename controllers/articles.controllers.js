@@ -13,9 +13,13 @@ exports.getArticleById = async (req, res, next) => {
   }
 };
 
-exports.getArticles = async (req, res) => {
-  const results = await fetchArticles();
-  res.status(200).send({ articles: results });
+exports.getArticles = async (req, res, next) => {
+  try {
+    const results = await fetchArticles(req);
+    res.status(200).send({ articles: results });
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.patchArticleById = async (req, res, next) => {
