@@ -5,9 +5,11 @@ exports.endpointErrorHandler = (req, res) => {
 exports.handlePsqlErrors = (err, req, res, next) => {
   const errCodeToMessage = {
     "22P02": "Invalid text representation",
-    23502: "Not null violation",
-    23503: "Foreign key violation",
-    42703: "Undefined column",
+    23502:
+      " A required field was not provided. Please ensure all necessary information is filled in and try again",
+    23503: "The referenced data does not exist. Please check and try again",
+    42703:
+      "The specified field is invalid. Please check your input and try again.",
   };
   if (errCodeToMessage[err.code]) {
     res.status(400).send({ error: { message: errCodeToMessage[err.code] } });
