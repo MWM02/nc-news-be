@@ -4,8 +4,6 @@ const app = require("../app");
 const data = require("../db/data/test-data");
 const seed = require("../db/seeds/seed");
 const db = require("../db/connection");
-const { string } = require("pg-format");
-const articles = require("../db/data/test-data/articles");
 require("jest-sorted");
 
 beforeEach(() => {
@@ -155,6 +153,7 @@ describe("GET /api/articles", () => {
       .get("/api/articles?topic=mitch")
       .expect(200)
       .then(({ body: { articles } }) => {
+        expect(articles.length).toBe(12);
         articles.forEach((article) => {
           expect(article).toMatchObject({
             author: expect.any(String),
@@ -193,7 +192,9 @@ describe("GET /api/articles", () => {
       .get("/api/articles?sort_by=random&order=desc")
       .expect(400)
       .then(({ body: { error } }) => {
-        expect(error.message).toBe("Undefined column");
+        expect(error.message).toBe(
+          "The specified field is invalid. Please check your input and try again."
+        );
       });
   });
 
@@ -333,7 +334,9 @@ describe("POST /api/articles/:article_id/comments", () => {
       .send({ username: "fake_user", body: "234" })
       .expect(400)
       .then(({ body: { error } }) => {
-        expect(error.message).toBe("Foreign key violation");
+        expect(error.message).toBe(
+          "The referenced data does not exist. Please check and try again"
+        );
       });
   });
 
