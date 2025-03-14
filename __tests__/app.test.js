@@ -47,8 +47,8 @@ describe("GET /api/articles/:article_id", () => {
     return request(app)
       .get("/api/articles/1")
       .expect(200)
-      .then(({ body: { article } }) => {
-        expect(article).toMatchObject({
+      .then(({ body: { articleById } }) => {
+        expect(articleById).toMatchObject({
           article_id: expect.any(Number),
           title: expect.any(String),
           topic: expect.any(String),
@@ -357,15 +357,15 @@ describe("PATCH /api/articles/:article_id", () => {
       .patch("/api/articles/1")
       .send({ inc_votes: -100 })
       .expect(200)
-      .then(({ body: { article } }) => {
-        expect(article.article_id).toBe(1);
-        expect(article.votes).toBe(0);
-        expect(typeof article.title).toBe("string");
-        expect(typeof article.topic).toBe("string");
-        expect(typeof article.author).toBe("string");
-        expect(typeof article.body).toBe("string");
-        expect(typeof article.created_at).toBe("string");
-        expect(typeof article.article_img_url).toBe("string");
+      .then(({ body: { updatedArticle } }) => {
+        expect(updatedArticle.article_id).toBe(1);
+        expect(updatedArticle.votes).toBe(0);
+        expect(typeof updatedArticle.title).toBe("string");
+        expect(typeof updatedArticle.topic).toBe("string");
+        expect(typeof updatedArticle.author).toBe("string");
+        expect(typeof updatedArticle.body).toBe("string");
+        expect(typeof updatedArticle.created_at).toBe("string");
+        expect(typeof updatedArticle.article_img_url).toBe("string");
       });
   });
 
@@ -466,8 +466,8 @@ describe("GET /api/users/:username", () => {
     return request(app)
       .get("/api/users/butter_bridge")
       .expect(200)
-      .then(({ body: { user } }) => {
-        expect(user).toMatchObject({
+      .then(({ body: { userById } }) => {
+        expect(userById).toMatchObject({
           username: expect.any(String),
           avatar_url: expect.any(String),
           name: expect.any(String),
@@ -490,8 +490,8 @@ describe("PATCH /api/comments/:comment_id", () => {
     return request(app)
       .patch("/api/comments/1")
       .send({ inc_votes: 10 })
-      .then(({ body: { comment } }) => {
-        expect(comment).toMatchObject({
+      .then(({ body: { updatedComment } }) => {
+        expect(updatedComment).toMatchObject({
           comment_id: 1,
           article_id: expect.any(Number),
           body: expect.any(String),
@@ -539,6 +539,107 @@ describe("PATCH /api/comments/:comment_id", () => {
       .expect(400)
       .then(({ body: { error } }) => {
         expect(error.message).toBe("Invalid text representation");
+      });
+  });
+});
+
+describe("POST /api/articles", () => {
+  test("201: Responds with the article object that has been inserted into the articles table with an additional comment count", () => {
+    return request(app)
+      .post("/api/articles")
+      .send({
+        title: "test_article",
+        topic: "cats",
+        author: "lurker",
+        body: "test_body",
+        article_img_url:
+          "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4",
+      })
+      .expect(201)
+      .then(({ body: { postedArticle } }) => {
+        expect(postedArticle).toMatchObject({
+          article_id: 14,
+          title: expect.any(String),
+          topic: expect.any(String),
+          author: expect.any(String),
+          created_at: expect.any(String),
+          votes: 0,
+          body: expect.any(String),
+          article_img_url: expect.any(String),
+          comment_count: expect.any(Number),
+        });
+      });
+  });
+
+  test("201: Responds with the article object with the avatar_img_url defaulted when its not provided in the request body", () => {
+    return request(app)
+      .post("/api/articles")
+      .send({
+        title: "test_article",
+        topic: "cats",
+        author: "lurker",
+        body: "test_body",
+      })
+      .expect(201)
+      .then(({ body: { postedArticle } }) => {
+        expect(postedArticle).toMatchObject({
+          article_id: 14,
+          title: expect.any(String),
+          topic: expect.any(String),
+          author: expect.any(String),
+          created_at: expect.any(String),
+          votes: 0,
+          body: expect.any(String),
+          article_img_url:
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+          comment_count: expect.any(Number),
+        });
+      });
+  });
+
+  test("400: Responds with an error object containing an error message when the request body is lacks necessary properties (title, topic, author, body)", () => {
+    return request(app)
+      .post("/api/articles")
+      .send({ topic: "cats", author: "lurker", body: "test_body" })
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid request body");
+      });
+  });
+
+  test("400: Responds with an error object containing an error message when the request body's topic or author properties contains a topic or username that does not exist in their respective tables", () => {
+    return request(app)
+      .post("/api/articles")
+      .send({
+        title: "test_article",
+        topic: "cats",
+        author: "test_user",
+        body: "test_body",
+        article_img_url:
+          "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4",
+      })
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe(
+          "The referenced data does not exist. Please check and try again"
+        );
+      });
+  });
+
+  test("400: Responds with an error object containing an error message when the request body's body property contains an empty string", () => {
+    return request(app)
+      .post("/api/articles")
+      .send({
+        title: "test_article",
+        topic: "cats",
+        author: "lurker",
+        body: "",
+        article_img_url:
+          "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4",
+      })
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid request body");
       });
   });
 });

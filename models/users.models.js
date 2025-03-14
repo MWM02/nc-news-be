@@ -6,13 +6,12 @@ exports.fetchUsers = async () => {
   return rows;
 };
 
-exports.fetchUserById = async (req) => {
-  const { username } = req.params;
+exports.fetchUserById = async (username) => {
   const sqlStr = `SELECT * FROM users WHERE username = $1`;
   const promises = [
     checkIfExist("users", "username", username),
     db.query(sqlStr, [username]),
   ];
-  const results = await Promise.all(promises);
-  return results[1].rows[0];
+  const resolvedPromises = await Promise.all(promises);
+  return resolvedPromises[1].rows[0];
 };
