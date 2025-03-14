@@ -485,6 +485,64 @@ describe("GET /api/users/:username", () => {
   });
 });
 
+describe("PATCH /api/comments/:comment_id", () => {
+  test("200: Responds with a comment object with the updated votes", () => {
+    return request(app)
+      .patch("/api/comments/1")
+      .send({ inc_votes: 10 })
+      .then(({ body: { comment } }) => {
+        expect(comment).toMatchObject({
+          comment_id: 1,
+          article_id: expect.any(Number),
+          body: expect.any(String),
+          votes: 26,
+          author: expect.any(String),
+          created_at: expect.any(String),
+        });
+      });
+  });
+
+  test("400: Responds with an object containing an error message if the comment_id is of valid data type but does not exist", () => {
+    return request(app)
+      .patch("/api/comments/99")
+      .send({ inc_votes: 100 })
+      .expect(404)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Resource not found");
+      });
+  });
+
+  test("400: Responds with an error object containing an error message when the comment_id is of invalid data type", () => {
+    return request(app)
+      .patch("/api/comments/two")
+      .send({ inc_votes: 100 })
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid text representation");
+      });
+  });
+
+  test("400: Responds with an object containing an error message when request body does not contain the correct property", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({ votes: 2 })
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid request body");
+      });
+  });
+
+  test("400: Responds with an object containing an error message when the request body contains the required properties but not the valid data types for the values", () => {
+    return request(app)
+      .patch("/api/comments/2")
+      .send({ inc_votes: "two" })
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid text representation");
+      });
+  });
+});
+
 describe("Other errors", () => {
   test("404: Responds with an object containing an error message and error code when the requested endpoint doesn't match to any api endpoint", () => {
     return request(app)

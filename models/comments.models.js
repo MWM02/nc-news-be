@@ -48,3 +48,16 @@ exports.removeCommentById = async (req) => {
   ];
   await Promise.all(promises);
 };
+
+exports.updateCommentById = async (req) => {
+  const { comment_id } = req.params;
+  const { inc_votes } = req.body;
+  const sqlStr = `UPDATE comments SET votes = votes + $1 WHERE comment_id = $2 RETURNING *`;
+  const promises = [
+    checkIfExist("comments", "comment_id", comment_id),
+    verifyReqBody(req.body, ["inc_votes"]),
+    db.query(sqlStr, [inc_votes, comment_id]),
+  ];
+  const results = await Promise.all(promises);
+  return results[2].rows[0];
+};
