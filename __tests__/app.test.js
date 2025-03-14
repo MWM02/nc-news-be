@@ -461,6 +461,30 @@ describe("GET /api/users", () => {
   });
 });
 
+describe("GET /api/users/:username", () => {
+  test("200: Responds with an user object containing the properties username, avatar_url, and name", () => {
+    return request(app)
+      .get("/api/users/butter_bridge")
+      .expect(200)
+      .then(({ body: { user } }) => {
+        expect(user).toMatchObject({
+          username: expect.any(String),
+          avatar_url: expect.any(String),
+          name: expect.any(String),
+        });
+      });
+  });
+
+  test("404: Responds with an object containing an error message when the requested username of valid data type does not exist", () => {
+    return request(app)
+      .get("/api/users/bob")
+      .expect(404)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Resource not found");
+      });
+  });
+});
+
 describe("Other errors", () => {
   test("404: Responds with an object containing an error message and error code when the requested endpoint doesn't match to any api endpoint", () => {
     return request(app)
