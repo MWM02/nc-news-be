@@ -1,31 +1,33 @@
 {
   "GET /api": {
-    "description": "serves up a json representation of all the available endpoints of the api"
+    "description": "Returns a JSON representation of all available API endpoints."
   },
   "GET /api/topics": {
-    "description": "serves an array of all topics",
+    "description": "Returns an array of all available topics.",
     "queries": [],
     "exampleResponse": {
       "topics": [{ "slug": "football", "description": "Footie!" }]
     }
   },
   "GET /api/articles/:article_id": {
-    "description": "serves an article object that matches the article_id with an additional comment_count",
+    "description": "Returns an article object matching the specified `article_id` (from the parametric endpoint).",
     "exampleResponse": {
-      "article_id": 2,
-      "title": "Sony Vaio; or, The Laptop",
-      "topic": "mitch",
-      "author": "icellusedkars",
-      "body": "Call me Mitchell. Some years ago..",
-      "created_at": "2020-10-16T05:03:00.000Z",
-      "votes": 0,
-      "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
-      "comment_count": 2
+      "article": {
+        "article_id": 2,
+        "title": "Sony Vaio; or, The Laptop",
+        "topic": "mitch",
+        "author": "icellusedkars",
+        "body": "Call me Mitchell. Some years ago..",
+        "created_at": "2020-10-16T05:03:00.000Z",
+        "votes": 0,
+        "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+        "comment_count": 2
+      }
     }
   },
   "GET /api/articles": {
-    "description": "serves an array of all articles sorted by date in descending order by default, additional queries can be appended to the request to sort_by any valid column, order to sort by ascending or descending, topic to filter by",
-    "queries": ["author", "topic", "sort_by", "order"],
+    "description": "Returns an array of all articles, along with a `total_count` for the number of articles. Results are sorted by date in descending order and limited to 10 by default. Additional queries can be used to filter or modify the response.",
+    "queries": ["author", "topic", "sort_by", "order", "limit", "p"],
     "exampleResponse": {
       "articles": [
         {
@@ -37,13 +39,14 @@
           "votes": 0,
           "comment_count": 6
         }
-      ]
+      ],
+      "total_count": 1
     }
   },
-  "GET /api/articles/:articles/comments": {
-    "description": "serves an array of comments for the given article_id with most recent comments first",
+  "GET /api/articles/:article_id/comments": {
+    "description": "Returns an array of comments for the specified `article_id` (from the parametric endpoint), with the most recent comments listed first.",
     "exampleResponse": {
-      "commentsByArticleId": [
+      "comments": [
         {
           "comment_id": 2,
           "votes": 10,
@@ -64,46 +67,90 @@
     }
   },
   "POST /api/articles/:article_id/comments": {
-    "description": "serves an object containing the comment that was inserted into the comments table",
+    "description": "Returns an object containing the comment inserted into the comments table, associated with the specified `article_id` (from the parametric endpoint). Required fields in the request body: `username` and `body`.",
     "exampleResponse": {
-      "comment_id": 1,
-      "article_id": 3,
-      "body": "This is my comment",
-      "votes": -1,
-      "author": "test_user",
-      "created_at": "2018-05-30T15:59:13.341Z"
+      "comment": {
+        "comment_id": 1,
+        "article_id": 3,
+        "body": "This is my comment",
+        "votes": -1,
+        "author": "test_user",
+        "created_at": "2018-05-30T15:59:13.341Z"
+      }
     }
   },
   "PATCH /api/articles/:article_id": {
-    "description": "serves an object containing the updated article that matches the article_id with it votes property adjusted",
+    "description": "Returns the updated article object with its `votes` property adjusted, based on the specified `article_id` (from the parametric endpoint). Required field in the request body: `inc_votes`.",
     "exampleResponse": {
-      "article_id": 2,
-      "title": "Sony Vaio; or, The Laptop",
-      "topic": "mitch",
-      "author": "icellusedkars",
-      "body": "Call me Mitchell. Some years ago..",
-      "created_at": "2020-10-16T05:03:00.000Z",
-      "votes": 2,
-      "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+      "article": {
+        "article_id": 2,
+        "title": "Sony Vaio; or, The Laptop",
+        "topic": "mitch",
+        "author": "icellusedkars",
+        "body": "Call me Mitchell. Some years ago..",
+        "created_at": "2020-10-16T05:03:00.000Z",
+        "votes": 2,
+        "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+      }
     }
   },
   "DELETE /api/comments/:comment_id": {
-    "description": "serves no response body but will delete comment by comment_id from comments table",
-    "exampleResponse": {}
+    "description": "Deletes the comment associated with the specified `comment_id` (from the parametric endpoint) from the comments table. No response body is returned."
   },
   "GET /api/users": {
-    "description": "serves an array of all users",
-    "exampleResponse": [
-      {
-        "username": "rogersop",
-        "name": "paul",
-        "avatar_url": "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4"
-      },
-      {
+    "description": "Returns an array of all users.",
+    "exampleResponse": {
+      "users": [
+        {
+          "username": "rogersop",
+          "name": "paul",
+          "avatar_url": "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4"
+        },
+        {
+          "username": "lurker",
+          "name": "do_nothing",
+          "avatar_url": "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
+        }
+      ]
+    }
+  },
+  "GET /api/users/:username": {
+    "description": "Returns a user object that matches the specified `username` (from the parametric endpoint).",
+    "exampleResponse": {
+      "user": {
         "username": "lurker",
         "name": "do_nothing",
         "avatar_url": "https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png"
       }
-    ]
+    }
+  },
+  "PATCH /api/comments/:comment_id": {
+    "description": "Returns an object containing the updated comment matching the specified `comment_id` (from the parametric endpoint), with its `votes` property adjusted. Required field in the request body: `inc_votes`.",
+    "exampleResponse": {
+      "comment": {
+        "comment_id": 1,
+        "article_id": 3,
+        "body": "This is my comment",
+        "votes": -1,
+        "author": "test_user",
+        "created_at": "2018-05-30T15:59:13.341Z"
+      }
+    }
+  },
+  "POST /api/articles": {
+    "description": "Returns an object containing the article inserted into the articles table. Required fields in the request body: `title`, `topic`, `author`, and `body`.",
+    "exampleResponse": {
+      "article": {
+        "article_id": 14,
+        "title": "test_article",
+        "topic": "cats",
+        "author": "lurker",
+        "created_at": "2018-05-30T15:59:13.341Z",
+        "votes": 0,
+        "body": "test_body",
+        "article_img_url": "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4",
+        "comment_count": 1
+      }
+    }
   }
 }

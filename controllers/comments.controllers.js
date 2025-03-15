@@ -8,8 +8,8 @@ const {
 exports.getCommentsByArticleId = async (req, res, next) => {
   const { article_id } = req.params;
   try {
-    const commentsByArticleId = await fetchCommentsByArticleId(article_id);
-    res.status(200).send({ commentsByArticleId });
+    const comments = await fetchCommentsByArticleId(article_id);
+    res.status(200).send({ comments });
   } catch (err) {
     next(err);
   }
@@ -18,8 +18,8 @@ exports.getCommentsByArticleId = async (req, res, next) => {
 exports.postCommentByArticleId = async (req, res, next) => {
   const { article_id } = req.params;
   try {
-    const results = await insertCommentByArticleId(article_id, req.body);
-    res.status(201).send({ postedComment: results });
+    const comment = await insertCommentByArticleId(article_id, req.body);
+    res.status(201).send({ comment });
   } catch (err) {
     next(err);
   }
@@ -38,8 +38,8 @@ exports.deleteCommentById = async (req, res, next) => {
 exports.patchCommentById = async (req, res, next) => {
   const { comment_id } = req.params;
   try {
-    const updatedComment = await updateCommentById(comment_id, req.body);
-    res.status(200).send({ updatedComment });
+    const comment = await updateCommentById(comment_id, req.body);
+    res.status(200).send({ comment });
   } catch (err) {
     next(err);
   }
