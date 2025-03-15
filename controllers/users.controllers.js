@@ -8,8 +8,8 @@ exports.getUsers = async (req, res) => {
 exports.getUserById = async (req, res, next) => {
   const { username } = req.params;
   try {
-    const userById = await fetchUserById(username);
-    res.status(200).send({ userById });
+    const user = await fetchUserById(username);
+    res.status(200).send({ user });
   } catch (err) {
     next(err);
   }
