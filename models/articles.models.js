@@ -16,11 +16,12 @@ exports.fetchArticleById = async (article_id) => {
   return resolvedPromises[1].rows[0];
 };
 
-exports.fetchArticles = async (sort_by, order, topic) => {
+exports.fetchArticles = async (sort_by, order, topic, limit, p) => {
   const values = [];
   const promises = [];
   let sqlPromiseIndex = 0;
   let sqlStr = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(articles.article_id) ::INT as comment_count  FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id `;
+
   if (topic) {
     sqlStr += `WHERE topic = $1`;
     values.push(topic);
@@ -37,10 +38,23 @@ exports.fetchArticles = async (sort_by, order, topic) => {
       error: { message: "Invalid order in request query", status: 400 },
     });
   }
+  const pageOffset = limit * (p - 1);
+  const sqlStrForTotal = `SELECT COUNT(*) ::INT as total_count FROM (${sqlStr})`;
+  sqlStr += format(` LIMIT %L OFFSET %L`, limit, pageOffset);
   promises.push(db.query(sqlStr, values));
+  promises.push(db.query(sqlStrForTotal, values));
+
   const resolvedPromises = await Promise.all(promises);
+  const { total_count } = resolvedPromises[sqlPromiseIndex + 1].rows[0];
   const { rows } = resolvedPromises[sqlPromiseIndex];
-  return rows;
+
+  if (pageOffset + 1 > total_count && total_count !== 0) {
+    return Promise.reject({
+      error: { message: "Page out of range", status: 404 },
+    });
+  }
+
+  return { articles: rows, total_count };
 };
 
 exports.updateArticleById = async (article_id, reqBody) => {
