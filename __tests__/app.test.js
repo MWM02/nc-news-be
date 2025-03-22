@@ -5,6 +5,7 @@ const data = require("../db/data/test-data");
 const seed = require("../db/seeds/seed");
 const db = require("../db/connection");
 require("jest-sorted");
+require("jest-date");
 
 beforeEach(() => {
   return seed(data);
@@ -273,19 +274,21 @@ describe("GET /api/articles", () => {
 });
 
 describe("GET /api/articles/:articles/comments", () => {
-  test("200: Responds with an array of comment objects for a given article_id", () => {
+  test("200: Responds with an array of comment objects for a given article_id and number of results limited to 10 at most by default", () => {
     return request(app)
       .get("/api/articles/1/comments")
       .expect(200)
       .then(({ body: { comments } }) => {
-        expect(comments.length).toBe(11);
+        expect(comments.length).toBe(10);
         comments.forEach((comment) => {
-          expect(typeof comment.comment_id).toBe("number");
-          expect(typeof comment.votes).toBe("number");
-          expect(typeof comment.created_at).toBe("string");
-          expect(typeof comment.author).toBe("string");
-          expect(typeof comment.body).toBe("string");
-          expect(comment.article_id).toBe(1);
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: 1,
+          });
         });
         expect(comments).toBeSortedBy("created_at", {
           descending: true,
@@ -293,12 +296,80 @@ describe("GET /api/articles/:articles/comments", () => {
       });
   });
 
-  test("200 Responds with an empty array for an article_id that exists in the articles table but does not have any comments", () => {
+  test("200: Responds with an array of comments limited to the specified number in the request query", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=5")
+      .expect(200)
+      .then(({ body: { comments } }) => {
+        expect(comments.length).toBe(5);
+        comments.forEach((comment) => {
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: 1,
+          });
+        });
+      });
+  });
+
+  test("200: Responds with an array of comments offset depending on the page number in the request query", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=6&p=2")
+      .expect(200)
+      .then(({ body: { comments } }) => {
+        expect(comments.length).toBe(5);
+        comments.forEach((comment) => {
+          expect(new Date(comment.created_at)).toBeBefore(
+            new Date("2020-04-14 21:19:00")
+          );
+          expect(comment).toMatchObject({
+            comment_id: expect.any(Number),
+            votes: expect.any(Number),
+            created_at: expect.any(String),
+            author: expect.any(String),
+            body: expect.any(String),
+            article_id: 1,
+          });
+        });
+      });
+  });
+
+  test("200: Responds with an empty array for an article_id that exists in the articles table but does not have any comments", () => {
     return request(app)
       .get("/api/articles/2/comments")
       .expect(200)
       .then(({ body: { comments } }) => {
         expect(comments.length).toBe(0);
+      });
+  });
+
+  test("400: Responds with an object containing an error message when the request query contains an invalid data type for page number", () => {
+    return request(app)
+      .get("/api/articles/1/comments?p=two&limit=10")
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid text representation");
+      });
+  });
+
+  test("404: Responds with an object containing an error message when the request query contains an valid data type for page number that does not exist", () => {
+    return request(app)
+      .get("/api/articles/1/comments?p=100")
+      .expect(404)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Page out of range");
+      });
+  });
+
+  test("400: Responds with an object containing an error message when the request query contains an invalid data type for limit", () => {
+    return request(app)
+      .get("/api/articles/1/comments?limit=two")
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid text representation");
       });
   });
 
