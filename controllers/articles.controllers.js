@@ -7,6 +7,7 @@ const {
 
 exports.getArticleById = async (req, res, next) => {
   const { article_id } = req.params;
+
   try {
     const article = await fetchArticleById(article_id);
     res.status(200).send({ article });
@@ -16,13 +17,8 @@ exports.getArticleById = async (req, res, next) => {
 };
 
 exports.getArticles = async (req, res, next) => {
-  const {
-    sort_by = "created_at",
-    order = "DESC",
-    topic,
-    limit = 10,
-    p = 1,
-  } = req.query;
+  const { sort_by, order, topic, limit, p } = req.query;
+
   try {
     const articlesAndCount = await fetchArticles(
       sort_by,
@@ -39,6 +35,7 @@ exports.getArticles = async (req, res, next) => {
 
 exports.patchArticleById = async (req, res, next) => {
   const { article_id } = req.params;
+
   try {
     const article = await updateArticleById(article_id, req.body);
     res.status(200).send({ article });
