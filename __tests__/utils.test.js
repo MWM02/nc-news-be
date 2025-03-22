@@ -4,6 +4,7 @@ const {
   formatArticleData,
   checkIfExist,
   verifyReqBody,
+  verifyPageNum,
 } = require("../utils/utils");
 const db = require("../db/connection");
 const data = require("../db/data/test-data");
@@ -495,6 +496,28 @@ describe("Tests for verifyRequestBody", () => {
     } catch (err) {
       expect(err.error.message).toBe("Invalid request body");
       expect(err.error.status).toBe(400);
+    }
+  });
+});
+
+describe("Tests for verifyPageNum", () => {
+  test("When the function is invoked with a parametrised SQL COUNT query string, its corresponding values in an array and a page offset, the function will return true if the page offset is valid", async () => {
+    const sqlStr = `SELECT COUNT(*) ::INT as total_count FROM comments WHERE article_id = $1`;
+    const values = [1];
+    const pageOffset = 2;
+    const result = await verifyPageNum(sqlStr, values, pageOffset);
+    expect(result).toBe(true);
+  });
+
+  test("When the function is invoked with a parametrised SQL COUNT query string, its corresponding values in an array and a page offset, the function will return an error object if the page offset is not valid", async () => {
+    const sqlStr = `SELECT COUNT(*) ::INT as total_count FROM comments WHERE article_id = $1`;
+    const values = [1];
+    const pageOffset = 20;
+    try {
+      await verifyPageNum(sqlStr, values, pageOffset);
+    } catch (err) {
+      expect(err.error.message).toBe("Page out of range");
+      expect(err.error.status).toBe(404);
     }
   });
 });
