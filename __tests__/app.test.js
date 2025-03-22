@@ -5,7 +5,6 @@ const data = require("../db/data/test-data");
 const seed = require("../db/seeds/seed");
 const db = require("../db/connection");
 require("jest-sorted");
-require("jest-date");
 
 beforeEach(() => {
   return seed(data);
