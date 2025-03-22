@@ -29,3 +29,11 @@ jobs:
 
       - name: Run tests
         run: PGDATABASE=my_db PGUSER=test_user PGPASSWORD=test_password npm t
+
+  deploy:
+    name: Deploy
+    runs-on: unbuntu-latest
+    needs: test
+    steps:
+      - name: Deploy to Render
+        run: curl $\{{secrets.RENDER_DEPLOY_HOOK_URL}}
