@@ -45,7 +45,7 @@ const checkIfExist = async (table_name, column_name, value) => {
   );
   const results = await db.query(sqlQuery, [value]);
   return results.rows.length
-    ? true
+    ? Promise.resolve(true)
     : Promise.reject({
         error: { message: "Resource not found", status: 404 },
       });
@@ -62,10 +62,22 @@ const verifyReqBody = (requestBody, destructKeys) => {
   return true;
 };
 
+const verifyPageNum = async (sqlQuery, valuesArr, pageOffset) => {
+  const {
+    rows: [{ total_count }],
+  } = await db.query(sqlQuery, valuesArr);
+  return pageOffset + 1 > total_count && total_count !== 0
+    ? Promise.reject({
+        error: { message: "Page out of range", status: 404 },
+      })
+    : Promise.resolve(true);
+};
+
 module.exports = {
   convertTimestampToDate,
   lookupAndFormat,
   formatArticleData,
   checkIfExist,
   verifyReqBody,
+  verifyPageNum,
 };
