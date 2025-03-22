@@ -3,16 +3,25 @@ const {
   convertTimestampToDate,
   checkIfExist,
   verifyReqBody,
+  verifyPageNum,
 } = require("../utils/utils");
 const format = require("pg-format");
 
-exports.fetchCommentsByArticleId = async (article_id) => {
-  const sqlStr = `SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC`;
+exports.fetchCommentsByArticleId = async (article_id, limit = 10, p = 1) => {
+  const pageOffset = limit * (p - 1);
+  const sqlStr = format(
+    `SELECT * FROM comments WHERE article_id = $1 ORDER BY created_at DESC LIMIT %L OFFSET %L`,
+    limit,
+    pageOffset
+  );
+  const sqlStrForTotal = `SELECT COUNT(*) ::INT as total_count FROM comments WHERE article_id = $1`;
   const promises = [
     checkIfExist("articles", "article_id", article_id),
     db.query(sqlStr, [article_id]),
+    verifyPageNum(sqlStrForTotal, [article_id], pageOffset),
   ];
   const resolvedPromises = await Promise.all(promises);
+
   return resolvedPromises[1].rows;
 };
 
@@ -34,6 +43,7 @@ exports.insertCommentByArticleId = async (article_id, reqBody) => {
     db.query(sqlStr),
   ];
   const resolvedPromises = await Promise.all(promises);
+
   return resolvedPromises[2].rows[0];
 };
 
@@ -43,6 +53,7 @@ exports.removeCommentById = async (comment_id) => {
     checkIfExist("comments", "comment_id", comment_id),
     db.query(sqlStr, [comment_id]),
   ];
+
   await Promise.all(promises);
 };
 
@@ -55,5 +66,6 @@ exports.updateCommentById = async (comment_id, reqBody) => {
     db.query(sqlStr, [inc_votes, comment_id]),
   ];
   const results = await Promise.all(promises);
+
   return results[2].rows[0];
 };
