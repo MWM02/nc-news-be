@@ -109,3 +109,13 @@ exports.insertArticle = async (reqBody) => {
 
   return article;
 };
+
+exports.removeArticleById = async (article_id) => {
+  const sqlStr = `DELETE FROM articles WHERE article_id = $1`;
+  const promises = [
+    checkIfExist("articles", "article_id", article_id),
+    db.query(sqlStr, [article_id]),
+  ];
+
+  await Promise.all(promises);
+};
