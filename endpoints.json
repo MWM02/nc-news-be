@@ -138,7 +138,7 @@
     }
   },
   "POST /api/articles": {
-    "description": "Returns an object containing the article inserted into the articles table. Required fields in the request body: `title`, `topic`, `author`, and `body`.",
+    "description": "Returns an object containing the article inserted into the articles table. Required fields in the request body: `title`, `topic`, `author`, and `body`. Optional field for request body: `article_img_url`.",
     "exampleResponse": {
       "article": {
         "article_id": 14,
@@ -150,6 +150,16 @@
         "body": "test_body",
         "article_img_url": "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4",
         "comment_count": 1
+      }
+    }
+  },
+  "POST /api/topics": {
+    "description": "Returns an object containing the topic inserted into the topics table. Required fields in the request body: `slug` and `description`. Optional field for request body: `img_url`.",
+    "exampleResponse": {
+      "topic": {
+        "description": "All about the game of chess",
+        "slug": "Chess",
+        "img_url": ""
       }
     }
   }
