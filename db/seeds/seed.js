@@ -45,7 +45,7 @@ const createTopics = async () => {
     CREATE TABLE IF NOT EXISTS topics (
     slug VARCHAR(255) UNIQUE PRIMARY KEY NOT NULL,
     description VARCHAR(255) NOT NULL, 
-    img_url VARCHAR(1000) NOT NULL
+    img_url VARCHAR(1000)
     );
     `);
 };
