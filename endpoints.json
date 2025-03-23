@@ -162,5 +162,8 @@
         "img_url": ""
       }
     }
+  },
+  "DELETE /api/articles/:article_id": {
+    "description": "Deletes the article associated with the specified `article_id` (from the parametric endpoint) from the articles table. No response body is returned."
   }
 }
