@@ -835,6 +835,39 @@ describe("POST /api/topics", () => {
   });
 });
 
+describe("DELETE /api/articles/:article_id", () => {
+  test("204: Responds with no content and the row relating to the article_id specified should be removed from the articles table", () => {
+    return request(app)
+      .delete("/api/articles/1")
+      .expect(204)
+      .then(() => {
+        db.query(`SELECT * FROM articles WHERE article_id = 1`).then(
+          ({ rows }) => {
+            expect(rows.length).toBe(0);
+          }
+        );
+      });
+  });
+
+  test("404: Responds with an error object containing an error message when article_id is of valid data type but does not exist", () => {
+    return request(app)
+      .delete("/api/articles/50")
+      .expect(404)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Resource not found");
+      });
+  });
+
+  test("400: Responds with an error object containing an error message when the article_id is of invalid data type", () => {
+    return request(app)
+      .delete("/api/articles/L")
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid text representation");
+      });
+  });
+});
+
 describe("Other errors", () => {
   test("404: Responds with an object containing an error message and error code when the requested endpoint doesn't match to any api endpoint", () => {
     return request(app)
