@@ -731,7 +731,7 @@ describe("POST /api/articles", () => {
       });
   });
 
-  test("400: Responds with an error object containing an error message when the request body is lacks necessary properties (title, topic, author, body)", () => {
+  test("400: Responds with an error object containing an error message when the request body lacks the necessary properties (title, topic, author, body)", () => {
     return request(app)
       .post("/api/articles")
       .send({ topic: "cats", author: "lurker", body: "test_body" })
@@ -771,6 +771,63 @@ describe("POST /api/articles", () => {
         article_img_url:
           "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4",
       })
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid request body");
+      });
+  });
+});
+
+describe("POST /api/topics", () => {
+  test("201: Responds with the topic object that has been inserted into the topics table", () => {
+    return request(app)
+      .post("/api/topics")
+      .send({
+        slug: "test-topic",
+        description: "This is a test",
+        img_url: "https://avatars2.githubusercontent.com/u/24604688?s=460&v=4",
+      })
+      .expect(201)
+      .then(({ body: { topic } }) => {
+        expect(topic).toMatchObject({
+          slug: expect.any(String),
+          description: expect.any(String),
+          img_url: expect.any(String),
+        });
+      });
+  });
+
+  test("201: Responds with the topic object that has been inserted into the topics table with an img_url property defaulted to an empty string when not provided", () => {
+    return request(app)
+      .post("/api/topics")
+      .send({
+        slug: "test-topic",
+        description: "This is a test",
+      })
+      .expect(201)
+      .then(({ body: { topic } }) => {
+        expect(topic).toMatchObject({
+          slug: expect.any(String),
+          description: expect.any(String),
+          img_url: "",
+        });
+      });
+  });
+
+  test("400: Responds with an error object containing an error message when the request body lacks the necessary properties (slug or description)", () => {
+    return request(app)
+      .post("/api/topics")
+      .send({})
+      .expect(400)
+      .then(({ body: { error } }) => {
+        expect(error.message).toBe("Invalid request body");
+      });
+  });
+
+  test("400: Responds with an error object containing an error message when the slug or description properties have falsey values", () => {
+    return request(app)
+      .post("/api/topics")
+      .send({ slug: "test-topic", description: "" })
       .expect(400)
       .then(({ body: { error } }) => {
         expect(error.message).toBe("Invalid request body");
