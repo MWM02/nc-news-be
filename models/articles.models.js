@@ -7,7 +7,7 @@ const {
 } = require("../utils/utils");
 
 exports.fetchArticleById = async (article_id) => {
-  const sqlStr = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.body, articles.created_at, articles.votes, articles.article_img_url, COUNT(articles.article_id) ::INT as comment_count  FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id WHERE articles.article_id = $1 GROUP BY articles.article_id`;
+  const sqlStr = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.body, articles.created_at, articles.votes, articles.article_img_url, COUNT(articles.article_id) ::INT AS comment_count  FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id WHERE articles.article_id = $1 GROUP BY articles.article_id`;
   const promises = [
     checkIfExist("articles", "article_id", article_id),
     db.query(sqlStr, [article_id]),
@@ -26,7 +26,7 @@ exports.fetchArticles = async (
   const values = [];
   const promises = [];
   let sqlPromiseIndex = 0;
-  let sqlStr = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(articles.article_id) ::INT as comment_count  FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id `;
+  let sqlStr = `SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url, COUNT(articles.article_id) ::INT AS comment_count  FROM articles LEFT JOIN comments ON articles.article_id = comments.article_id `;
 
   if (topic) {
     sqlStr += `WHERE topic = $1`;
@@ -46,7 +46,7 @@ exports.fetchArticles = async (
   }
 
   const pageOffset = limit * (p - 1);
-  const sqlStrForTotal = `SELECT COUNT(*) ::INT as total_count FROM (${sqlStr})`;
+  const sqlStrForTotal = `SELECT COUNT(*) ::INT AS total_count FROM (${sqlStr}) AS derivedTable`;
 
   sqlStr += format(` LIMIT %L OFFSET %L`, limit, pageOffset);
 
