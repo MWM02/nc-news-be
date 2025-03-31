@@ -27,7 +27,7 @@
   },
   "GET /api/articles": {
     "description": "Returns an array of all articles, along with a `total_count` for the number of articles. Results are sorted by date in descending order and limited to 10 by default. Additional queries can be used to filter or modify the response.",
-    "queries": ["author", "topic", "sort_by", "order", "limit", "p"],
+    "queries": ["topic", "sort_by", "order", "limit", "p"],
     "exampleResponse": {
       "articles": [
         {
