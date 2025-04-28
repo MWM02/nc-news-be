@@ -14,7 +14,7 @@ exports.fetchCommentsByArticleId = async (article_id, limit = 10, p = 1) => {
     limit,
     pageOffset
   );
-  const sqlStrForTotal = `SELECT COUNT(*) ::INT as total_count FROM comments WHERE article_id = $1`;
+  const sqlStrForTotal = `SELECT COUNT(*) ::INT AS total_count FROM comments WHERE article_id = $1`;
   const promises = [
     checkIfExist("articles", "article_id", article_id),
     db.query(sqlStr, [article_id]),

@@ -4,7 +4,6 @@
   },
   "GET /api/topics": {
     "description": "Returns an array of all available topics.",
-    "queries": [],
     "exampleResponse": {
       "topics": [{ "slug": "football", "description": "Footie!" }]
     }
